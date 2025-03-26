@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "imgui.h"
@@ -16,8 +17,6 @@
 #include "Callbacks.h"
 #include "Globals.h"
 #include "SolarSystem.h"
-#include "Sphere.h"
-#include "Shader.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     if (!glfwInit()) return -1;
@@ -65,7 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         processInput(window);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.02f, 0.02f, 0.06f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 projection = camera.getProjectionMatrix(1280.0f / 720.0f);
         glm::mat4 view = camera.getViewMatrix();
@@ -88,10 +87,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGui::Begin("Solar System Controls");
-        static float gConst = 0.1f;
-        ImGui::SliderFloat("Gravitational Constant", &gConst, 0.01f, 1.0f);
+        static float gravConst = solarSystem.getGravitationalConstant();
+        ImGui::SliderFloat("Gravitational Constant", &gravConst, 0.01f, 1.0f);
+        solarSystem.setGravitationalConstant(gravConst);
         static int planetCount = solarSystem.getPlanets().size();
         ImGui::Text("Planet Count: %d", planetCount);
+        static float extraSpin = 0.0f;
+        if (ImGui::Button("Add Extra Spin")) {
+            for (auto& p : solarSystem.getPlanets()) {
+                p.angularVelocity += extraSpin;
+            }
+        }
+        ImGui::SliderFloat("Extra Spin", &extraSpin, 0.0f, 1.0f);
         ImGui::End();
 
         ImGui::Render();
